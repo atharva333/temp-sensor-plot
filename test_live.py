@@ -110,6 +110,32 @@ class NestAPIData:
 
             return False
 
+class ExternalTemperatureData:
+
+    def __init__(self):
+
+        self.temperature_datapoints = []
+        self.humidity_datapoints = []
+
+    def get_new_external_reading(self):
+
+        try:
+
+            url = "https://api.open-meteo.com/v1/forecast"
+
+            data = {"latitude": 55.9453, "longitude": -3.182, "current_weather": True}
+
+            response = requests.get(url, data)
+
+            temperature = response.json()["current_weather"]["temperature"]
+            self.temperature_datapoints.append(temperature)
+
+            return True
+        
+        except Exception as e:
+            print(e)
+            return False
+
 class PlotlyLiveServer:
 
     def __init__(self):
@@ -117,6 +143,8 @@ class PlotlyLiveServer:
         self.sensor_data = DHTSensorData()
 
         self.nest_data = NestAPIData()
+
+        self.outside_data = ExternalTemperatureData()
         
         self.fig = plotly.tools.make_subplots(rows=1, cols=1)
         self.fig.update_layout(
@@ -139,6 +167,13 @@ class PlotlyLiveServer:
             "type": "scatter",
             "mode": "markers"}, 1, 1)
 
+        self.fig.append_trace({
+            "x": [], 
+            "y": [],
+            "name": "Outside temperature", 
+            "type": "scatter",
+            "mode": "markers"}, 1, 1)
+
         self.fig.update_layout(legend_title_text="Location", showlegend=True)
 
     def get_new_reading(self):
@@ -151,6 +186,11 @@ class PlotlyLiveServer:
         if self.nest_data.get_nest_sensor_data():
             self.fig["data"][1]["x"] = self.sensor_data.timestamps # Use same timestamp as sensor data
             self.fig["data"][1]["y"] = self.nest_data.temperature_datapoints
+
+        if self.outside_data.get_new_external_reading():
+            self.fig["data"][2]["x"] = self.sensor_data.timestamps # Use same timestamp as sensor data
+            self.fig["data"][2]["y"] = self.outside_data.temperature_datapoints
+
 
         return self.fig
 
@@ -168,7 +208,7 @@ if __name__ == '__main__':
             dcc.Graph(id='live-update-graph'),
             dcc.Interval(
                 id='interval-component',
-                interval=30*1000, # in milliseconds
+                interval=120*1000, # in milliseconds
                 n_intervals=0
             )
         ])
