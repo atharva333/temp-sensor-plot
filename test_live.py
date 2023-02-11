@@ -18,7 +18,7 @@ app.layout = html.Div(
         dcc.Graph(id='live-update-graph'),
         dcc.Interval(
             id='interval-component',
-            interval=5*1000, # in milliseconds
+            interval=10*1000, # in milliseconds
             n_intervals=0
         )
     ])
@@ -43,30 +43,17 @@ app.layout = html.Div(
 @app.callback(Output('live-update-graph', 'figure'),
               Input('interval-component', 'n_intervals'))
 def update_graph_live(n):
-#    satellite = Orbital('TERRA')
-    #time, temperature, humidity = get_sensor_reading()
 
-    global data
+    global sensor_data
 
-    # Collect some data
-#    for i in range(180):
-#        time = datetime.datetime.now() - datetime.timedelta(seconds=i*20)
-#        lon, lat, alt = satellite.get_lonlatalt(
-#            time
-#        )
-#        data['Longitude'].append(lon)
-#        data['Latitude'].append(lat)
-#        data['Altitude'].append(alt)
-#        data['time'].append(time)
-    time, temperature, humidity = get_sensor_reading()
-    data["time"].append(time)
-    data["temperature"].append(temperature)
+    sensor_data.get_sensor_reading()
 
     fig = plotly.tools.make_subplots(rows=1, cols=1)
 
     fig.append_trace({
-        "x": data["time"], 
-        "y": data["temperature"], 
+        "x": sensor_data.timestamps, 
+        "y": sensor_data.temperature_datapoints,
+        "name": "Bedroom temperature", 
         "type": "scatter"}, 1, 1)
 
     # # Set title
@@ -100,6 +87,49 @@ def update_graph_live(n):
 
     return fig
 
+class DHTSensorData:
+
+    def __init__(self) -> None:
+        # Initialise data structure for storing DHT temperature sensor data
+
+        self.timestamps = []
+        self.temperature_datapoints = []
+        self.humidity_datapoints = []
+
+        # Initial the dht device, with data pin connected to:
+        self.dhtDevice = adafruit_dht.DHT22(board.D4) 
+
+    def get_new_reading(self) -> None:
+        """Get new reading from sensor"""
+
+        while True:
+            try:
+                
+                # Get timestamp and readings
+                timestamp = datetime.now()
+                temperature_reading = self.dhtDevice.temperature
+                humidity_reading = self.dhtDevice.humidity
+
+                str_info = f"Time: {timestamp} Temp: {temperature_reading:.1f} C    Humidity: {humidity_reading}% "
+                print(str_info)
+
+                # Append to list
+                self.timestamps.append(timestamp)
+                self.temperature_datapoints.append(temperature_reading)
+                self.humidity_datapoints.append(humidity_reading)
+
+                break
+
+            except RuntimeError as e:
+                print(e)
+                continue
+
+            except Exception as e:
+                print(e)
+
+        self.dhtDevice.exit()
+        return None
+
 def get_sensor_reading():
 
     # Initial the dht device, with data pin connected to:
@@ -130,12 +160,8 @@ def get_sensor_reading():
     return (now_time, temperature_c, humidity)
 
 if __name__ == '__main__':
-    
-    global data
-    data = {
-        'time': [],
-        'temperature': [],
-        'humidity': [],
-    }
+
+    global sensor_data
+    sensor_data = DHTSensorData()
 
     app.run_server(debug=True, host='192.168.1.43')
