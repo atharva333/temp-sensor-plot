@@ -46,7 +46,7 @@ def update_graph_live(n):
 
     global sensor_data
 
-    sensor_data.get_sensor_reading()
+    sensor_data.get_new_reading()
 
     fig = plotly.tools.make_subplots(rows=1, cols=1)
 
