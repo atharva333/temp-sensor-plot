@@ -62,12 +62,15 @@ class NestAPIData:
         with open(self.api_config_file) as fileread:
             self.api_info = json.load(fileread)
 
-        self.access_token = self.get_access_token()
+        self.get_access_token()
 
         self.temperature_datapoints = []
         self.humidity_datapoints = []
 
     def get_access_token(self):
+
+        print("Getting new access token")
+
         data = {
             "client_id": self.api_info["client_id"],
             "client_secret": self.api_info["client_secret"],
@@ -78,26 +81,34 @@ class NestAPIData:
 
         response = requests.post(url, data)
 
-        return response.json()["access_token"]
+        self.access_token = response.json()["access_token"]
 
     def get_nest_sensor_data(self):
 
-        headers = {
-            "Content-Type": "application/json", 
-            "Authorization": f"Bearer {self.access_token}"}
+        try:
 
-        url = "https://smartdevicemanagement.googleapis.com/v1/enterprises/3f7b67ed-ad48-43d0-b6cf-9b05132cee6b/devices"
+            headers = {
+                "Content-Type": "application/json", 
+                "Authorization": f"Bearer {self.access_token}"}
 
-        response = requests.get(url, headers=headers)
+            url = "https://smartdevicemanagement.googleapis.com/v1/enterprises/3f7b67ed-ad48-43d0-b6cf-9b05132cee6b/devices"
 
-        temperature = response.json()["devices"][0]["traits"]["sdm.devices.traits.Temperature"]["ambientTemperatureCelsius"]
-        self.temperature_datapoints.append(temperature)
+            response = requests.get(url, headers=headers)
 
-        humidity = response.json()["devices"][0]["traits"]["sdm.devices.traits.Humidity"]["ambientHumidityPercent"]
-        self.humidity_datapoints.append(humidity)
+            temperature = response.json()["devices"][0]["traits"]["sdm.devices.traits.Temperature"]["ambientTemperatureCelsius"]
+            self.temperature_datapoints.append(temperature)
 
-        print(temperature, humidity)
+            humidity = response.json()["devices"][0]["traits"]["sdm.devices.traits.Humidity"]["ambientHumidityPercent"]
+            self.humidity_datapoints.append(humidity)
 
+            print(temperature, humidity)
+            return True
+
+        except KeyError as e:
+            print(e)
+            self.get_access_token()
+
+            return False
 
 class PlotlyLiveServer:
 
@@ -133,13 +144,13 @@ class PlotlyLiveServer:
     def get_new_reading(self):
 
         self.sensor_data.get_new_reading()
-        self.nest_data.get_nest_sensor_data()
 
         self.fig["data"][0]["x"] = self.sensor_data.timestamps
         self.fig["data"][0]["y"] = self.sensor_data.temperature_datapoints
 
-        self.fig["data"][1]["x"] = self.sensor_data.timestamps # Use same timestamp as sensor data
-        self.fig["data"][1]["y"] = self.nest_data.temperature_datapoints
+        if self.nest_data.get_nest_sensor_data():
+            self.fig["data"][1]["x"] = self.sensor_data.timestamps # Use same timestamp as sensor data
+            self.fig["data"][1]["y"] = self.nest_data.temperature_datapoints
 
         return self.fig
 
