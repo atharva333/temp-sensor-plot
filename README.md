@@ -8,4 +8,5 @@ Feature ideas:
 - [ ] Host server on pi with REST API to get sensor updates
 - [ ] Plot sensor updates real-time with sever on pi
 - [ ] Get outside temperature as data for plot
-- [ ] Try access nest thermostat API for heating updates
+- [ ] Access nest thermostat API and add to plot
+- [ ] Logic to optimise heating schedule
