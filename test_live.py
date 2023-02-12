@@ -4,6 +4,7 @@ import adafruit_dht
 
 import requests
 import json
+import csv
 
 import dash
 from dash import dcc, html
@@ -145,7 +146,22 @@ class PlotlyLiveServer:
         self.nest_data = NestAPIData()
 
         self.outside_data = ExternalTemperatureData()
-        
+
+        start_time = datetime.now()
+        self.csv_file_path = f"data/tempdata-{start_time.date()}-{start_time.time()}.csv"
+
+        csv_file = open(self.csv_file_path, "a")
+        headers = ["datetime", 
+                    "bedroom_temperature", 
+                    "bedroom_humidity", 
+                    "livingroom_temperature", 
+                    "livingroom_humidity", 
+                    "outside_temperature", 
+                    "outside_humidity"]
+        self.csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
+        self.csv_writer.writeheader()
+        csv_file.close()
+
         self.fig = plotly.tools.make_subplots(rows=1, cols=1)
         self.fig.update_layout(
             title_text="Temperature over time",
@@ -170,7 +186,7 @@ class PlotlyLiveServer:
         self.fig.append_trace({
             "x": [], 
             "y": [],
-            "name": "Outside temperature", 
+            "name": "Outside", 
             "type": "scatter",
             "mode": "markers"}, 1, 1)
 
@@ -178,22 +194,42 @@ class PlotlyLiveServer:
 
     def get_new_reading(self):
 
+        csv_row = {"datetime": None, 
+                    "bedroom_temperature": None, 
+                    "bedroom_humidity": None, 
+                    "livingroom_temperature": None, 
+                    "livingroom_humidity": None, 
+                    "outside_temperature": None, 
+                    "outside_humidity": None}
+
         self.sensor_data.get_new_reading()
 
         self.fig["data"][0]["x"] = self.sensor_data.timestamps
         self.fig["data"][0]["y"] = self.sensor_data.temperature_datapoints
 
+        csv_row["datetime"] = self.sensor_data.timestamps[-1]
+        csv_row["bedroom_temperature"] = self.sensor_data.temperature_datapoints[-1]
+        csv_row["bedroom_humidity"] = self.sensor_data.humidity_datapoints[-1]
+
         if self.nest_data.get_nest_sensor_data():
             self.fig["data"][1]["x"] = self.sensor_data.timestamps # Use same timestamp as sensor data
             self.fig["data"][1]["y"] = self.nest_data.temperature_datapoints
+
+            csv_row["livingroom_temperature"] = self.nest_data.temperature_datapoints[-1]
+            csv_row["livingroom_humidity"] = self.nest_data.humidity_datapoints[-1]
 
         if self.outside_data.get_new_external_reading():
             self.fig["data"][2]["x"] = self.sensor_data.timestamps # Use same timestamp as sensor data
             self.fig["data"][2]["y"] = self.outside_data.temperature_datapoints
 
+            csv_row["outside_temperature"] = self.outside_data.temperature_datapoints[-1]
+
+        csv_file = open(self.csv_file_path, "a")
+        self.csv_writer = csv.DictWriter(csv_file, csv_row.keys())
+        self.csv_writer.writerow(csv_row)
+        csv_file.close()
 
         return self.fig
-
 
 if __name__ == '__main__':
 
