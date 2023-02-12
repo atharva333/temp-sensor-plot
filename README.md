@@ -6,7 +6,7 @@ Feature ideas:
 - [x] Save sensor data from pi as csv
 - [X] Plot csv data in Python
 - [ ] Host server on pi with REST API to get sensor updates
-- [ ] Plot sensor updates real-time with sever on pi
-- [ ] Get outside temperature as data for plot
-- [ ] Access nest thermostat API and add to plot
+- [X] Plot sensor updates real-time with sever on pi - done using dash callback instead of flask API
+- [X] Get outside temperature as data for plot
+- [X] Access nest thermostat API and add to plot
 - [ ] Logic to optimise heating schedule
