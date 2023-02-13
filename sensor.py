@@ -4,6 +4,8 @@ import adafruit_dht
 import sqlite3
 import time
 
+from sensor_db import BaseSensorDB
+
 
 class DHTSensorData:
     """
@@ -51,33 +53,16 @@ class DHTSensorData:
         return None
 
 
-class DHTDB:
-    def __init__(self) -> None:
-        # Initialise data structure for storing DHT temperature sensor data
-
+class DHTDB(BaseSensorDB):
+    def __init__(self):
+        # Set db filepath
         self.database_filepath = "data/dht.db"
+        self._create_db_table()
 
         # Initial the dht device, with data pin connected to:
         self.dhtDevice = adafruit_dht.DHT22(board.D4)
 
-    def _create_db_table(self):
-        """
-        Create sqlite table
-        """
-
-        # Connect to the database (or create it if it doesn't exist)
-        self.conn = sqlite3.connect(self.database_filepath)
-        self.conn_cursor = self.conn.cursor()
-
-        # Create a table with timestamp, temperature, humidity fields
-        self.conn_cursor.execute(
-            "CREATE TABLE IF NOT EXISTS data (timestamp datetime, temperature real, humidity real)"
-        )
-
-        self.conn.commit()
-        self.conn.close()
-
-    def get_new_reading(self) -> None:
+    def get_new_reading(self) -> bool:
         """Get new reading from sensor"""
 
         # Connect to the database
@@ -101,6 +86,7 @@ class DHTDB:
                 )
                 self.conn.commit()
 
+                success = True
                 break
 
             except RuntimeError as e:
@@ -109,6 +95,7 @@ class DHTDB:
 
             except Exception as e:
                 print(e)
+                success = False
 
         ## Cleanup
         # Close GPIO connection
@@ -117,7 +104,7 @@ class DHTDB:
         # Close connection to db
         self.conn.close()
 
-        return None
+        return success
 
 
 if __name__ == "__main__":
