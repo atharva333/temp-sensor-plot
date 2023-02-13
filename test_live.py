@@ -1,9 +1,4 @@
 from datetime import datetime
-import board
-import adafruit_dht
-
-import requests
-import json
 import csv
 
 import dash
@@ -11,127 +6,9 @@ from dash import dcc, html
 import plotly
 from dash.dependencies import Input, Output
 
-
-class DHTSensorData:
-    def __init__(self) -> None:
-        # Initialise data structure for storing DHT temperature sensor data
-
-        self.timestamps = []
-        self.temperature_datapoints = []
-        self.humidity_datapoints = []
-
-        # Initial the dht device, with data pin connected to:
-        self.dhtDevice = adafruit_dht.DHT22(board.D4)
-
-    def get_new_reading(self) -> None:
-        """Get new reading from sensor"""
-
-        while True:
-            try:
-                # Get timestamp and readings
-                timestamp = datetime.now()
-                temperature_reading = self.dhtDevice.temperature
-                humidity_reading = self.dhtDevice.humidity
-
-                str_info = (
-                    f"Time: {timestamp} Temp: {temperature_reading:.1f} C    Humidity: {humidity_reading}% "
-                )
-                print(str_info)
-
-                # Append to list
-                self.timestamps.append(timestamp)
-                self.temperature_datapoints.append(temperature_reading)
-                self.humidity_datapoints.append(humidity_reading)
-
-                break
-
-            except RuntimeError as e:
-                print(e)
-                continue
-
-            except Exception as e:
-                print(e)
-
-        self.dhtDevice.exit()
-        return None
-
-
-class NestAPIData:
-    api_config_file = "api_token.json"
-
-    def __init__(self):
-        with open(self.api_config_file) as fileread:
-            self.api_info = json.load(fileread)
-
-        self.get_access_token()
-
-        self.temperature_datapoints = []
-        self.humidity_datapoints = []
-
-    def get_access_token(self):
-        print("Getting new access token")
-
-        data = {
-            "client_id": self.api_info["client_id"],
-            "client_secret": self.api_info["client_secret"],
-            "refresh_token": self.api_info["refresh_token"],
-            "grant_type": "refresh_token",
-        }
-        url = "https://www.googleapis.com/oauth2/v4/token?"
-
-        response = requests.post(url, data)
-
-        self.access_token = response.json()["access_token"]
-
-    def get_nest_sensor_data(self):
-        try:
-            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.access_token}"}
-
-            url = "https://smartdevicemanagement.googleapis.com/v1/enterprises/3f7b67ed-ad48-43d0-b6cf-9b05132cee6b/devices"
-
-            response = requests.get(url, headers=headers)
-
-            temperature = response.json()["devices"][0]["traits"]["sdm.devices.traits.Temperature"][
-                "ambientTemperatureCelsius"
-            ]
-            self.temperature_datapoints.append(temperature)
-
-            humidity = response.json()["devices"][0]["traits"]["sdm.devices.traits.Humidity"][
-                "ambientHumidityPercent"
-            ]
-            self.humidity_datapoints.append(humidity)
-
-            print(temperature, humidity)
-            return True
-
-        except KeyError as e:
-            print(e)
-            self.get_access_token()
-
-            return False
-
-
-class ExternalTemperatureData:
-    def __init__(self):
-        self.temperature_datapoints = []
-        self.humidity_datapoints = []
-
-    def get_new_external_reading(self):
-        try:
-            url = "https://api.open-meteo.com/v1/forecast"
-
-            data = {"latitude": 55.9453, "longitude": -3.182, "current_weather": True}
-
-            response = requests.get(url, data)
-
-            temperature = response.json()["current_weather"]["temperature"]
-            self.temperature_datapoints.append(temperature)
-
-            return True
-
-        except Exception as e:
-            print(e)
-            return False
+from sensor import DHTSensorData
+from nest import NestAPIData
+from external import ExternalTemperatureData
 
 
 class PlotlyLiveServer:
@@ -168,17 +45,11 @@ class PlotlyLiveServer:
             yaxis_title="Temperature (°C)",
         )
 
-        self.fig.append_trace(
-            {"x": [], "y": [], "name": "Bedroom", "type": "scatter", "mode": "markers"}, 1, 1
-        )
+        self.fig.append_trace({"x": [], "y": [], "name": "Bedroom", "type": "scatter", "mode": "markers"}, 1, 1)
 
-        self.fig.append_trace(
-            {"x": [], "y": [], "name": "Living room", "type": "scatter", "mode": "markers"}, 1, 1
-        )
+        self.fig.append_trace({"x": [], "y": [], "name": "Living room", "type": "scatter", "mode": "markers"}, 1, 1)
 
-        self.fig.append_trace(
-            {"x": [], "y": [], "name": "Outside", "type": "scatter", "mode": "markers"}, 1, 1
-        )
+        self.fig.append_trace({"x": [], "y": [], "name": "Outside", "type": "scatter", "mode": "markers"}, 1, 1)
 
         self.fig.update_layout(legend_title_text="Location", showlegend=True)
 
