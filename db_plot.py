@@ -22,6 +22,7 @@ class PlotlyLiveServer:
             title_text="Temperature over time",
             xaxis_title="Time",
             yaxis_title="Temperature (°C)",
+            yaxis_range=[-5, 22],
         )
 
         self.fig.append_trace({"x": [], "y": [], "name": "Bedroom", "type": "scatter", "mode": "markers"}, 1, 1)
@@ -48,17 +49,17 @@ class PlotlyLiveServer:
         return results
 
     def get_new_reading(self):
-        bedroom_data = np.array(self._get_db_data(self.bedroom_db))
-        self.fig["data"][0]["x"] = bedroom_data[:, 0]
-        self.fig["data"][0]["y"] = bedroom_data[:, 1]
+        bedroom_data = self._get_db_data(self.bedroom_db)
+        self.fig["data"][0]["x"] = [row[0] for row in bedroom_data]
+        self.fig["data"][0]["y"] = [row[1] for row in bedroom_data]
 
-        livingroom_data = np.array(self._get_db_data(self.livingroom_db))
-        self.fig["data"][1]["x"] = livingroom_data[:, 0]
-        self.fig["data"][1]["y"] = livingroom_data[:, 1]
+        livingroom_data = self._get_db_data(self.livingroom_db)
+        self.fig["data"][1]["x"] = [row[0] for row in livingroom_data]
+        self.fig["data"][1]["y"] = [row[1] for row in livingroom_data]
 
-        external_data = np.array(self._get_db_data(self.external_db))
-        self.fig["data"][2]["x"] = external_data[:, 0]
-        self.fig["data"][2]["y"] = external_data[:, 1]
+        external_data = self._get_db_data(self.external_db)
+        self.fig["data"][2]["x"] = [row[0] for row in external_data]
+        self.fig["data"][2]["y"] = [row[1] for row in external_data]
 
         return self.fig
 
