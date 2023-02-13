@@ -4,7 +4,7 @@ import adafruit_dht
 import sqlite3
 import time
 
-from sensor_db import BaseSensorDB
+from .sensor_db import BaseSensorDB
 
 
 class DHTSensorData:

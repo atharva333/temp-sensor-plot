@@ -3,7 +3,7 @@ import json
 import requests
 import sqlite3
 
-from sensor_db import BaseSensorDB
+from .sensor_db import BaseSensorDB
 
 
 class NestAPIData:
@@ -112,7 +112,7 @@ class NestAPIDB(BaseSensorDB):
             timestamp = datetime.now()
 
             response = requests.get(url, headers=headers)
-            print(json.dumps(response.json(), indent=2))
+            # print(json.dumps(response.json(), indent=2))
 
             temperature = response.json()["devices"][0]["traits"]["sdm.devices.traits.Temperature"][
                 "ambientTemperatureCelsius"

@@ -3,7 +3,7 @@ import json
 import sqlite3
 import requests
 
-from sensor_db import BaseSensorDB
+from .sensor_db import BaseSensorDB
 
 
 class ExternalTemperatureData:
