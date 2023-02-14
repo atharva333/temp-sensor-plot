@@ -6,9 +6,9 @@ from dash import dcc, html
 import plotly
 from dash.dependencies import Input, Output
 
-from sensor import DHTSensorData
-from nest import NestAPIData
-from external import ExternalTemperatureData
+from sensor_reading.sensor import DHTSensorData
+from sensor_reading.nest import NestAPIData
+from sensor_reading.external import ExternalTemperatureData
 
 
 class PlotlyLiveServer:
