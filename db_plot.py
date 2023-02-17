@@ -86,10 +86,10 @@ if __name__ == "__main__":
                 dcc.DatePickerRange(
                     id="my-date-picker-range",
                     min_date_allowed=date(2023, 2, 10),
-                    max_date_allowed=datetime.today(),
+                    max_date_allowed=date(2023, 12, 31),
                     initial_visible_month=date(2023, 2, 15),
                     start_date=(datetime.today() - timedelta(days=1)).date(),
-                    end_date=datetime.today().date(),
+                    end_date=date(2023, 12, 31),
                 ),
                 html.Br(),
                 dcc.Interval(id="interval-component", interval=120 * 1000, n_intervals=0),  # in milliseconds
