@@ -24,16 +24,58 @@ class PlotlyLiveServer:
             title_text="Temperature over time",
             xaxis_title="Time",
             yaxis_title="Temperature (°C)",
-            yaxis_range=[-5, 22],
+            yaxis_range=[-5, 25],
         )
 
-        self.fig.append_trace({"x": [], "y": [], "name": "Bedroom", "type": "scatter", "mode": "markers"}, 1, 1)
+        self.fig.append_trace(
+            {
+                "x": [],
+                "y": [],
+                "name": "Bedroom",
+                "type": "scatter",
+                "mode": "lines+markers",
+                "marker": {
+                    "size": 3,
+                    "symbol": "circle",
+                },
+            },
+            1,
+            1,
+        )
 
-        self.fig.append_trace({"x": [], "y": [], "name": "Living room", "type": "scatter", "mode": "markers"}, 1, 1)
+        self.fig.append_trace(
+            {
+                "x": [],
+                "y": [],
+                "name": "Living room",
+                "type": "scatter",
+                "mode": "lines+markers",
+                "marker": {
+                    "size": 3,
+                    "symbol": "circle",
+                },
+            },
+            1,
+            1,
+        )
 
-        self.fig.append_trace({"x": [], "y": [], "name": "Outside", "type": "scatter", "mode": "markers"}, 1, 1)
+        self.fig.append_trace(
+            {
+                "x": [],
+                "y": [],
+                "name": "Outside",
+                "type": "scatter",
+                "mode": "lines+markers",
+                "marker": {
+                    "size": 3,
+                    "symbol": "circle",
+                },
+            },
+            1,
+            1,
+        )
 
-        self.fig.update_layout(legend_title_text="Location", showlegend=True)
+        self.fig.update_layout(legend_title_text="Location", showlegend=True, template="ggplot2")
 
     def _get_db_data(self, db, start_date=None, end_date=None):
         # Connect to the database
