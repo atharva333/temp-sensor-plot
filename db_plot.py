@@ -86,7 +86,7 @@ class PlotlyLiveServer:
             print("Time")
             cursor.execute(f"SELECT * FROM data WHERE timestamp BETWEEN ? AND ?", (start_date, end_date))
         else:
-            cursor.execute("SELECT * FROM data")
+            cursor.execute("SELECT * FROM data ORDER BY timestamp DESC LIMIT 1")
 
         # Fetch the results of the query
         results = cursor.fetchall()
@@ -113,6 +113,14 @@ class PlotlyLiveServer:
 
         return self.fig
 
+    def get_latest_reading(self):
+        readings = []
+        readings.append(self._get_db_data(self.bedroom_db))
+        readings.append(self._get_db_data(self.livingroom_db))
+        readings.append(self._get_db_data(self.external_db))
+
+        return readings
+
 
 if __name__ == "__main__":
     server = PlotlyLiveServer()
@@ -125,6 +133,8 @@ if __name__ == "__main__":
         html.Div(
             [
                 html.H4("Temperature sensor Feed"),
+                html.H5(id="current-temperature"),
+                html.Br(),
                 dcc.DatePickerRange(
                     id="my-date-picker-range",
                     min_date_allowed=date(2023, 2, 10),
@@ -133,7 +143,6 @@ if __name__ == "__main__":
                     start_date=(datetime.today() - timedelta(days=1)).date(),
                     end_date=date(2023, 12, 31),
                 ),
-                html.Br(),
                 dcc.Interval(id="interval-component", interval=120 * 1000, n_intervals=0),  # in milliseconds
                 dcc.Graph(id="live-update-graph"),
             ],
@@ -141,9 +150,10 @@ if __name__ == "__main__":
     )
 
     # Multiple components can update everytime interval gets fired.
-    # @app.callback(Output("live-update-graph", "figure"), Input("interval-component", "n_intervals"))
-    # def update_graph_live(n):
-    #     return server.get_new_reading()
+    @app.callback(Output("current-temperature", "children"), Input("interval-component", "n_intervals"))
+    def update_graph_live(n):
+        readings_list = server.get_latest_reading()
+        return f"Current temperatures: Bedroom {readings_list[0][0][1]:.1f} | Living room {readings_list[1][0][1]:.1f} | Outside {readings_list[2][0][1]:.1f}"
 
     @app.callback(
         Output("live-update-graph", "figure"),
