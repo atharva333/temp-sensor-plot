@@ -15,10 +15,12 @@ class PlotlyLiveServer:
         """Initialise sensor and graph figure data"""
 
         self.bedroom_db = "data/dht.db"
-
         self.livingroom_db = "data/nest.db"
         self.external_db = "data/external.db"
 
+        self._set_up_figure()
+
+    def _set_up_figure(self):
         self.fig = plotly.tools.make_subplots(rows=1, cols=1)
         self.fig.update_layout(
             title_text="Temperature over time",
@@ -53,6 +55,7 @@ class PlotlyLiveServer:
                 "marker": {
                     "size": 3,
                     "symbol": "circle",
+                    "color": "royalblue",
                 },
             },
             1,
@@ -98,7 +101,7 @@ class PlotlyLiveServer:
 
         return results
 
-    def get_new_reading(self, start_date=None, end_date=None):
+    def get_updated_figure(self, start_date=None, end_date=None):
         bedroom_data = self._get_db_data(self.bedroom_db, start_date, end_date)
         self.fig["data"][0]["x"] = [row[0] for row in bedroom_data]
         self.fig["data"][0]["y"] = [row[1] for row in bedroom_data]
@@ -167,21 +170,14 @@ if __name__ == "__main__":
             string_prefix = "You have selected: "
             if start_date is not None:
                 start_date_object = datetime.strptime(start_date, "%Y-%m-%d").date()
-                # start_date_string = start_date_object.strftime("%B %d, %Y")
-                # string_prefix = string_prefix + "Start Date: " + start_date_string + " | "
+
             if end_date is not None:
                 end_date_object = datetime.strptime(end_date, "%Y-%m-%d").date()
-                # end_date_string = end_date_object.strftime("%B %d, %Y")
-                # string_prefix = string_prefix + "End Date: " + end_date_string
-            # # if len(string_prefix) == len("You have selected: "):
-            #     return "Select a date to see it displayed here"
-            # else:
-            #     return string_prefix
 
             if (start_date is not None) and (end_date is not None):
-                return server.get_new_reading(start_date_object, end_date_object)
+                return server.get_updated_figure(start_date_object, end_date_object)
             else:
-                return server.get_new_reading()
+                return server.get_updated_figure()
         except Exception as e:
             print(e)
             raise e
