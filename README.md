@@ -6,7 +6,7 @@ Feature ideas:
 - [X] Save sensor data from pi as csv
 - [X] Write data to sqlite database
 - [X] Plot csv data in Python
-- [~] Host server on pi with REST API to get sensor updates
+- [X] Host server on pi with API to get sensor updates
 - [X] Separate backend data logging with frontend interval plotting
 - [X] Plot sensor updates real-time with sever on pi - done using dash callback instead of flask API
 - [X] Get outside temperature as data for plot
