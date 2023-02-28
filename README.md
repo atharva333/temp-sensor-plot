@@ -11,4 +11,4 @@ Feature ideas:
 - [X] Plot sensor updates real-time with sever on pi - done using dash callback instead of flask API
 - [X] Get outside temperature as data for plot
 - [X] Access nest thermostat API and add to plot
-- [ ] Logic to optimise heating schedule
+- ~~Logic to optimise heating schedule~~
