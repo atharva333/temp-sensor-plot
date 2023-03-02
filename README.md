@@ -2,6 +2,8 @@
 
 Plotting and hosting webserver on raspberry pi with temperature and humidity sensor
 
+![Example temperature plot](data/temp_plot.png)
+
 Feature ideas:
 - [X] Save sensor data from pi as csv
 - [X] Write data to sqlite database
