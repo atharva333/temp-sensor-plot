@@ -132,25 +132,27 @@ if __name__ == "__main__":
     external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
     app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-    app.layout = html.Div(
-        html.Div(
-            [
-                html.H4("Temperature sensor Feed"),
-                html.H5(id="current-temperature"),
-                html.Br(),
-                dcc.DatePickerRange(
-                    id="my-date-picker-range",
-                    min_date_allowed=date(2023, 2, 10),
-                    max_date_allowed=date(2023, 12, 31),
-                    initial_visible_month=date(2023, 2, 15),
-                    start_date=(datetime.today() - timedelta(days=1)).date(),
-                    end_date=date(2023, 12, 31),
-                ),
-                dcc.Interval(id="interval-component", interval=120 * 1000, n_intervals=0),  # in milliseconds
-                dcc.Graph(id="live-update-graph"),
-            ],
+
+    def serve_layout():
+        return html.Div(
+            html.Div(
+                [
+                    html.H4("Temperature sensor Feed"),
+                    html.H5(id="current-temperature"),
+                    html.Br(),
+                    dcc.DatePickerRange(
+                        id="my-date-picker-range",
+                        min_date_allowed=date(2023, 2, 10),
+                        max_date_allowed=date(2023, 12, 31),
+                        initial_visible_month=datetime.today(),
+                        start_date=(datetime.today() - timedelta(days=1)).date(),
+                        end_date=(datetime.today() + timedelta(days=1)).date(),
+                    ),
+                    dcc.Interval(id="interval-component", interval=120 * 1000, n_intervals=0),  # in milliseconds
+                    dcc.Graph(id="live-update-graph"),
+                ],
+            )
         )
-    )
 
     # Multiple components can update everytime interval gets fired.
     @app.callback(Output("current-temperature", "children"), Input("interval-component", "n_intervals"))
@@ -181,5 +183,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             raise e
+
+    app.layout = serve_layout
 
     app.run_server(debug=True, host="192.168.1.43")
