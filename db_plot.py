@@ -134,6 +134,10 @@ if __name__ == "__main__":
     app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
     def serve_layout():
+        """
+        Function that is called during reload
+        Allows shifting date picker and graph range based on page reload instead of server side date
+        """
         return html.Div(
             html.Div(
                 [
@@ -157,6 +161,9 @@ if __name__ == "__main__":
     # Multiple components can update everytime interval gets fired.
     @app.callback(Output("current-temperature", "children"), Input("interval-component", "n_intervals"))
     def update_graph_live(n):
+        """
+        Get latest reading from database for each data source / table
+        """
         readings_list = server.get_latest_reading()
         return f"Current temperatures: Bedroom {readings_list[0][0][1]:.1f} | Living room {readings_list[1][0][1]:.1f} | Outside {readings_list[2][0][1]:.1f}"
 
@@ -168,6 +175,16 @@ if __name__ == "__main__":
         ],
     )
     def update_output(start_date, end_date):
+        """
+        Updates graph figure object based on start and end date from Dash's date picker component
+
+        Args:
+            start_date (string): Get start date as string from dash date picker
+            end_date (string): Get end date as string from dash date picker
+
+        Returns:
+            fig: Updated figure as expected for dash graph component
+        """
         try:
             string_prefix = "You have selected: "
             if start_date is not None:
