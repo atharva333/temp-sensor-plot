@@ -152,7 +152,7 @@ if __name__ == "__main__":
                         start_date=(datetime.today() - timedelta(days=1)).date(),
                         end_date=(datetime.today() + timedelta(days=1)).date(),
                     ),
-                    dcc.Interval(id="interval-component", interval=120 * 1000, n_intervals=0),  # in milliseconds
+                    dcc.Interval(id="interval-component", interval=60 * 1000, n_intervals=0),  # in milliseconds
                     dcc.Graph(id="live-update-graph"),
                 ],
             )
