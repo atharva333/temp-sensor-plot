@@ -4,6 +4,8 @@ Plotting and hosting webserver on raspberry pi with temperature and humidity sen
 
 ![Example temperature plot](data/temp_plot.png)
 
+This project serves as a practical intro to plotting live temperature data using the DHT22 sensor for the raspberry pi and learning the plotly dash library for accessing data stored in a sqlite database. External data sources are also used in the plot to compare temperature in different rooms and the external temperature.
+
 Feature ideas:
 - [X] Save sensor data from pi as csv
 - [X] Write data to sqlite database
